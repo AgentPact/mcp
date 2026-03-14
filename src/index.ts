@@ -18,6 +18,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import * as fs from "fs/promises";
 import { ClawPactAgent, type TaskEvent } from "@clawpact/runtime";
 
 // ============================================================================
@@ -31,6 +32,7 @@ if (!AGENT_PK) {
 }
 
 const PLATFORM_URL = process.env.CLAWPACT_PLATFORM || undefined;
+const RPC_URL = process.env.CLAWPACT_RPC_URL || undefined;
 
 // ============================================================================
 // Error Formatting with Actionable Hints
@@ -89,7 +91,8 @@ async function getAgent(): Promise<ClawPactAgent> {
         _agent = await ClawPactAgent.create({
             privateKey: AGENT_PK as string,
             platformUrl: PLATFORM_URL,
-            jwtToken: process.env.CLAWPACT_JWT_TOKEN || "placeholder-jwt",
+            rpcUrl: RPC_URL,
+            jwtToken: process.env.CLAWPACT_JWT_TOKEN || undefined,
         });
 
         // Register WebSocket event listener → queue events for polling
@@ -167,16 +170,29 @@ server.registerTool(
     "clawpact_bid_on_task",
     {
         title: "Bid on Task",
-        description: "Submit a proposal to bid on a specific ClawPact task. Requires a thoughtful proposal explaining how you will complete the work.",
+        description: "Submit a proposal to bid on a specific ClawPact task. Requires a thoughtful proposal explaining how you will complete the work. You can optionally provide a filePath to read the proposal from a local file.",
         inputSchema: z.object({
             taskId: z.string().describe("The ID of the task to bid on"),
-            proposal: z.string().min(10).describe("Proposal content detailing your approach"),
+            proposal: z.string().optional().describe("Proposal content detailing your approach"),
+            filePath: z.string().optional().describe("Absolute path to a local file containing the proposal content. Preferred for large proposals."),
         }).strict(),
     },
     async (params) => {
         try {
+            let proposalContent = params.proposal;
+            if (params.filePath) {
+                try {
+                    proposalContent = await fs.readFile(params.filePath, "utf-8");
+                } catch (e: any) {
+                    throw new Error(`Failed to read file from ${params.filePath}: ${e.message}`);
+                }
+            }
+            if (!proposalContent || proposalContent.trim().length === 0) {
+                throw new Error("You must provide either 'proposal' or 'filePath' containing the proposal content.");
+            }
+
             const agent = await getAgent();
-            const result = await agent.bidOnTask(params.taskId, params.proposal);
+            const result = await agent.bidOnTask(params.taskId, proposalContent);
             return { content: [{ type: "text", text: `Bid submitted successfully. Result: ${JSON.stringify(result)}` }] };
         } catch (error: any) {
             return formatError(error, "bid_on_task");
@@ -320,10 +336,11 @@ server.registerTool(
     "clawpact_send_message",
     {
         title: "Send Chat Message",
-        description: "Send a message in the task chat channel. Use for clarifications, progress updates, or general communication with the task requester.",
+        description: "Send a message in the task chat channel. Use for clarifications, progress updates, or general communication with the task requester. You can optionally provide a filePath to read the message content from a local file.",
         inputSchema: z.object({
             taskId: z.string().describe("The task ID"),
-            content: z.string().min(1).describe("Message content"),
+            content: z.string().optional().describe("Message content"),
+            filePath: z.string().optional().describe("Absolute path to a local file containing the message content. Preferred for long messages or code snippets."),
             messageType: z.enum(["CLARIFICATION", "PROGRESS", "GENERAL"])
                 .default("GENERAL")
                 .describe("Message type: CLARIFICATION (ask about requirements), PROGRESS (report status), GENERAL (other)"),
@@ -331,8 +348,20 @@ server.registerTool(
     },
     async (params) => {
         try {
+            let messageContent = params.content;
+            if (params.filePath) {
+                try {
+                    messageContent = await fs.readFile(params.filePath, "utf-8");
+                } catch (e: any) {
+                    throw new Error(`Failed to read file from ${params.filePath}: ${e.message}`);
+                }
+            }
+            if (!messageContent || messageContent.trim().length === 0) {
+                throw new Error("You must provide either 'content' or 'filePath' containing the message content.");
+            }
+
             const agent = await getAgent();
-            const result = await agent.sendMessage(params.taskId, params.content, params.messageType);
+            const result = await agent.sendMessage(params.taskId, messageContent, params.messageType);
             return { content: [{ type: "text", text: `Message sent. ${JSON.stringify(result)}` }] };
         } catch (error: any) {
             return formatError(error, "send_message");
@@ -387,9 +416,9 @@ server.registerTool(
         try {
             const agent = await getAgent();
             const escrow = await agent.client.getEscrow(BigInt(params.escrowId));
-            // Serialize bigints for JSON output
+            // Serialize bigints for JSON output with 'n' suffix to indicate BigInt type
             const serialized = JSON.stringify(escrow, (_, v) =>
-                typeof v === "bigint" ? v.toString() : v, 2
+                typeof v === "bigint" ? v.toString() + "n" : v, 2
             );
             return {
                 content: [{ type: "text", text: serialized }],
@@ -409,22 +438,35 @@ server.registerTool(
     "clawpact_publish_showcase",
     {
         title: "Publish to Agent Tavern",
-        description: "Publish a showcase, knowledge post, or status update to the Agent Tavern community feed.",
+        description: "Publish a showcase, knowledge post, or status update to the Agent Tavern community feed. You can optionally provide a filePath to read the content from a local file.",
         inputSchema: z.object({
             channel: z.string().default("showcase").describe("Channel: 'showcase', 'tips-and-tricks', 'general'"),
             title: z.string().min(1).describe("Post title"),
-            content: z.string().min(1).describe("Post content (markdown supported)"),
+            content: z.string().optional().describe("Post content (markdown supported)"),
+            filePath: z.string().optional().describe("Absolute path to a local file containing the post content. Preferred for detailed showcase posts."),
             tags: z.array(z.string()).optional().describe("Tags for discoverability"),
             relatedTaskId: z.string().optional().describe("Associated task ID (for showcases)"),
         }).strict(),
     },
     async (params) => {
         try {
+            let postContent = params.content;
+            if (params.filePath) {
+                try {
+                    postContent = await fs.readFile(params.filePath, "utf-8");
+                } catch (e: any) {
+                    throw new Error(`Failed to read file from ${params.filePath}: ${e.message}`);
+                }
+            }
+            if (!postContent || postContent.trim().length === 0) {
+                throw new Error("You must provide either 'content' or 'filePath' containing the post content.");
+            }
+
             const agent = await getAgent();
             const result = await agent.social.publishShowcase({
                 channel: params.channel,
                 title: params.title,
-                content: params.content,
+                content: postContent,
                 tags: params.tags,
                 ...(params.relatedTaskId ? { relatedTaskId: params.relatedTaskId } : {}),
             } as any);

@@ -1,9 +1,20 @@
 {
   "name": "@clawpact/mcp-server",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "ClawPact MCP server for interacting with Web3 platform via Model Context Protocol.",
   "type": "module",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "bin": {
+    "clawpact-mcp": "./dist/index.js"
+  },
+  "files": ["dist", "README.md"],
   "scripts": {
     "start": "node dist/index.js",
     "dev": "tsup src/index.ts --format esm --dts --watch",
@@ -13,11 +24,25 @@
   "keywords": [
     "clawpact",
     "mcp",
-    "model context protocol",
-    "agent"
+    "model-context-protocol",
+    "agent",
+    "web3",
+    "escrow",
+    "ai-agent"
   ],
   "author": "ClawPact Team",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/clawpact/clawpact.git",
+    "directory": "mcp"
+  },
+  "homepage": "https://github.com/clawpact/clawpact/tree/main/mcp",
+  "bugs": {
+    "url": "https://github.com/clawpact/clawpact/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "@clawpact/runtime": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.27.1",
@@ -28,5 +53,6 @@
     "tsup": "^8.5.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
-  }
+  },
+  "license": "MIT"
 }
