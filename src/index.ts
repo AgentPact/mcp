@@ -3,12 +3,12 @@
 /**
  * ClawPact MCP Server — Complete V2.1 Implementation
  *
- * Provides 11 tools covering the full task lifecycle:
+ * Provides 19 tools covering the full task lifecycle:
  * - Discovery: get_available_tasks, fetch_task_details, get_escrow
  * - Bidding: bid_on_task
  * - Lifecycle: confirm_task, decline_task, abandon_task, submit_delivery
- * - Communication: send_message, get_messages
- * - Social: publish_showcase
+ * - Communication: send_message, get_messages, get_task_timeline
+ * - Social: publish_showcase, get_tip_status
  * - Events: poll_events (WebSocket event queue)
  *
  * The server maintains an internal WebSocket connection via @clawpact/runtime
@@ -95,6 +95,14 @@ async function getAgent(): Promise<ClawPactAgent> {
             jwtToken: process.env.CLAWPACT_JWT_TOKEN || undefined,
         });
 
+        await _agent.ensureProviderProfile(
+            process.env.CLAWPACT_AGENT_TYPE || "openclaw-agent",
+            (process.env.CLAWPACT_CAPABILITIES || "general")
+                .split(",")
+                .map((item) => item.trim())
+                .filter(Boolean)
+        );
+
         // Register WebSocket event listener → queue events for polling
         const FORWARDED_EVENTS = [
             "TASK_CREATED",
@@ -158,6 +166,30 @@ server.registerTool(
             };
         } catch (error: any) {
             return formatError(error, "get_available_tasks");
+        }
+    }
+);
+
+server.registerTool(
+    "clawpact_register_provider",
+    {
+        title: "Register Provider Profile",
+        description: "Register the current wallet as a ClawPact provider so it can bid on tasks.",
+        inputSchema: z.object({
+            agentType: z.string().default("openclaw-agent"),
+            capabilities: z.array(z.string()).default(["general"]),
+        }).strict(),
+    },
+    async (params) => {
+        try {
+            const agent = await getAgent();
+            const profile = await agent.ensureProviderProfile(params.agentType, params.capabilities);
+            return {
+                content: [{ type: "text", text: `Provider profile ready: ${JSON.stringify(profile)}` }],
+                structuredContent: { profile } as any,
+            };
+        } catch (error: any) {
+            return formatError(error, "register_provider");
         }
     }
 );
@@ -431,7 +463,35 @@ server.registerTool(
 );
 
 // ============================================================================
-// Tool 11: Publish Showcase
+// Tool 11: Get Task Timeline
+// ============================================================================
+
+server.registerTool(
+    "clawpact_get_task_timeline",
+    {
+        title: "Get Task Timeline",
+        description: "Retrieve the task timeline. Platform will prefer Envio-backed timeline events and fall back to local task logs when needed.",
+        inputSchema: z.object({
+            taskId: z.string().describe("The task ID"),
+        }).strict(),
+        annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+    },
+    async (params) => {
+        try {
+            const agent = await getAgent();
+            const timeline = await agent.getTaskTimeline(params.taskId);
+            return {
+                content: [{ type: "text", text: JSON.stringify(timeline, null, 2) }],
+                structuredContent: { timeline } as any,
+            };
+        } catch (error: any) {
+            return formatError(error, "get_task_timeline");
+        }
+    }
+);
+
+// ============================================================================
+// Tool 12: Publish Showcase
 // ============================================================================
 
 server.registerTool(
@@ -478,7 +538,35 @@ server.registerTool(
 );
 
 // ============================================================================
-// Tool 12: Poll Events (WebSocket Event Queue)
+// Tool 13: Get Tip Status
+// ============================================================================
+
+server.registerTool(
+    "clawpact_get_tip_status",
+    {
+        title: "Get Tip Settlement Status",
+        description: "Retrieve the current settlement status of an on-chain social tip. Useful for checking when a PENDING tip has been marked SETTLED by Envio projection sync.",
+        inputSchema: z.object({
+            tipRecordId: z.string().describe("The TipRecord ID returned by social.tip()"),
+        }).strict(),
+        annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+    },
+    async (params) => {
+        try {
+            const agent = await getAgent();
+            const tip = await agent.social.getTip(params.tipRecordId);
+            return {
+                content: [{ type: "text", text: JSON.stringify(tip, null, 2) }],
+                structuredContent: { tip } as any,
+            };
+        } catch (error: any) {
+            return formatError(error, "get_tip_status");
+        }
+    }
+);
+
+// ============================================================================
+// Tool 14: Poll Events (WebSocket Event Queue)
 // ============================================================================
 
 server.registerTool(
@@ -527,7 +615,7 @@ server.registerTool(
 );
 
 // ============================================================================
-// Tool 13: Report Progress
+// Tool 15: Report Progress
 // ============================================================================
 
 server.registerTool(
@@ -553,7 +641,7 @@ server.registerTool(
 );
 
 // ============================================================================
-// Tool 14: Claim Acceptance Timeout
+// Tool 16: Claim Acceptance Timeout
 // ============================================================================
 
 server.registerTool(
@@ -577,7 +665,7 @@ server.registerTool(
 );
 
 // ============================================================================
-// Tool 15: Claim Delivery Timeout
+// Tool 17: Claim Delivery Timeout
 // ============================================================================
 
 server.registerTool(
@@ -601,7 +689,7 @@ server.registerTool(
 );
 
 // ============================================================================
-// Tool 16: Claim Confirmation Timeout
+// Tool 18: Claim Confirmation Timeout
 // ============================================================================
 
 server.registerTool(
@@ -625,7 +713,7 @@ server.registerTool(
 );
 
 // ============================================================================
-// Tool 17: Get Revision Details
+// Tool 19: Get Revision Details
 // ============================================================================
 
 server.registerTool(
@@ -688,7 +776,7 @@ server.registerResource(
 async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error("ClawPact MCP server v2.0 running on stdio (12 tools + 1 resource)");
+    console.error("ClawPact MCP server v2.0 running on stdio (19 tools + 1 resource)");
 }
 
 main().catch(console.error);
