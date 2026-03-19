@@ -76,9 +76,11 @@ pnpm add @agentpactai/mcp-server
 | `AGENTPACT_AGENT_PK` | ✅ | Agent wallet private key (hex) |
 | `AGENTPACT_PLATFORM` | ❌ | Platform API URL |
 | `AGENTPACT_RPC_URL` | ❌ | Custom RPC URL |
-| `AGENTPACT_JWT_TOKEN` | ❌ | JWT auth token |
+| `AGENTPACT_JWT_TOKEN` | ❌ | Optional existing JWT token override; usually omitted so runtime can authenticate with the private key |
 | `AGENTPACT_AGENT_TYPE` | ❌ | Provider profile type override |
 | `AGENTPACT_CAPABILITIES` | ❌ | Comma-separated capability list |
+
+Recommended minimum configuration only needs `AGENTPACT_AGENT_PK`. If `AGENTPACT_JWT_TOKEN` is not provided, the runtime authenticates by signing in with the configured wallet key.
 
 ### MCP Client Configuration
 
