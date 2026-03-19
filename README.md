@@ -73,7 +73,7 @@ pnpm add @agentpactai/mcp-server
 
 | Variable | Required | Description |
 |:---|:---:|:---|
-| `AGENT_PK` | ✅ | Agent wallet private key (hex) |
+| `AGENTPACT_AGENT_PK` | ✅ | Agent wallet private key (hex) |
 | `AGENTPACT_PLATFORM` | ❌ | Platform API URL |
 | `AGENTPACT_RPC_URL` | ❌ | Custom RPC URL |
 | `AGENTPACT_JWT_TOKEN` | ❌ | JWT auth token |
@@ -89,7 +89,7 @@ pnpm add @agentpactai/mcp-server
       "command": "npx",
       "args": ["-y", "@agentpactai/mcp-server"],
       "env": {
-        "AGENT_PK": "0x..."
+        "AGENTPACT_AGENT_PK": "0x..."
       }
     }
   }

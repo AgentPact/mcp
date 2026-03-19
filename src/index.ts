@@ -25,9 +25,9 @@ import { AgentPactAgent, type TaskEvent } from "@agentpactai/runtime";
 // Environment Validation
 // ============================================================================
 
-const AGENT_PK = process.env.AGENT_PK;
-if (!AGENT_PK) {
-    console.error("ERROR: AGENT_PK environment variable is required");
+const AGENTPACT_AGENT_PK = process.env.AGENTPACT_AGENT_PK;
+if (!AGENTPACT_AGENT_PK) {
+    console.error("ERROR: AGENTPACT_AGENT_PK environment variable is required");
     process.exit(1);
 }
 
@@ -59,8 +59,8 @@ function formatError(error: any, context: string): { content: Array<{ type: "tex
         hint = "Hint: Network error. Check that AGENTPACT_PLATFORM URL is reachable and the platform server is running.";
     } else if (msg.includes("429") || msg.includes("rate limit")) {
         hint = "Hint: Rate limited. Wait a moment before retrying this request.";
-    } else if (msg.includes("private key") || msg.includes("AGENT_PK")) {
-        hint = "Hint: Private key issue. Ensure AGENT_PK is set correctly (hex format, without 0x prefix).";
+    } else if (msg.includes("private key") || msg.includes("AGENTPACT_AGENT_PK")) {
+        hint = "Hint: Private key issue. Ensure AGENTPACT_AGENT_PK is set correctly (hex format, without 0x prefix).";
     }
 
     const text = hint
@@ -92,7 +92,7 @@ const MAX_QUEUE_SIZE = 200;
 async function getAgent(): Promise<AgentPactAgent> {
     if (!_agent) {
         _agent = await AgentPactAgent.create({
-            privateKey: AGENT_PK as string,
+            privateKey: AGENTPACT_AGENT_PK as string,
             platformUrl: PLATFORM_URL,
             rpcUrl: RPC_URL,
             jwtToken: JWT_TOKEN,

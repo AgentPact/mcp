@@ -7,7 +7,7 @@ async function main() {
     args: ["dist/index.js"],
     env: {
       ...process.env,
-      AGENT_PK: process.env.AGENT_PK || "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef", // Dummy
+      AGENTPACT_AGENT_PK: process.env.AGENTPACT_AGENT_PK || "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef", // Dummy
       AGENTPACT_JWT_TOKEN: process.env.AGENTPACT_JWT_TOKEN || "test",
     }
   });
