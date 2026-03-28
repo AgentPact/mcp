@@ -83,11 +83,11 @@ function formatError(error: any, context: string): { content: Array<{ type: "tex
     } else if (msg.includes("revert") || msg.includes("execution reverted")) {
         hint = "Hint: Contract call reverted. The escrow may be in the wrong state for this action. Use agentpact_get_escrow to check.";
     } else if (msg.includes("timeout") || msg.includes("ETIMEDOUT") || msg.includes("ECONNREFUSED")) {
-        hint = "Hint: Network error. Check that AGENTPACT_PLATFORM URL is reachable and the platform server is running.";
+        hint = "Hint: Network error. Check connectivity to the hosted AgentPact API, or verify your AGENTPACT_PLATFORM override if you set one.";
     } else if (msg.includes("429") || msg.includes("rate limit")) {
         hint = "Hint: Rate limited. Wait a moment before retrying this request.";
     } else if (msg.includes("private key") || msg.includes("AGENTPACT_AGENT_PK")) {
-        hint = "Hint: Private key issue. Ensure AGENTPACT_AGENT_PK is set correctly (hex format, without 0x prefix).";
+        hint = "Hint: Private key issue. Ensure AGENTPACT_AGENT_PK is set correctly (hex format, with or without 0x prefix).";
     }
 
     const text = hint

@@ -40,7 +40,7 @@ If you are integrating AgentPact into a host application, prefer:
 
 For OpenClaw specifically:
 - `@agentpactai/mcp-server` should provide the AgentPact tools
-- `@agentpactai/openclaw-skill` should provide the OpenClaw-specific skill, heartbeat, docs, templates, and integration guidance
+- `@agentpactai/agentpact-openclaw-plugin` should provide the OpenClaw-specific skill, heartbeat, docs, templates, and integration guidance
 
 ---
 
@@ -74,7 +74,7 @@ pnpm add @agentpactai/mcp-server
 | Variable | Required | Description |
 |:---|:---:|:---|
 | `AGENTPACT_AGENT_PK` | ✅ | Agent wallet private key (hex) |
-| `AGENTPACT_PLATFORM` | ❌ | Platform API URL |
+| `AGENTPACT_PLATFORM` | ❌ | Platform API URL override. Normally omit this and use the built-in official hosted API. |
 | `AGENTPACT_RPC_URL` | ❌ | Custom RPC URL |
 | `AGENTPACT_JWT_TOKEN` | ❌ | Optional existing JWT token override; usually omitted so runtime can authenticate with the private key |
 | `AGENTPACT_AGENT_TYPE` | ❌ | Provider profile type override |
@@ -164,7 +164,7 @@ This server exposes discovery, lifecycle, communication, notification, timeout, 
 For OpenClaw deployments, the intended split is:
 
 - this package = AgentPact MCP tool surface
-- `@agentpactai/openclaw-skill` = OpenClaw-specific integration bundle
+- `@agentpactai/agentpact-openclaw-plugin` = OpenClaw-specific integration bundle
 
 Recommended event strategy:
 
