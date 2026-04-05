@@ -3,6 +3,12 @@
         "target": "ES2022",
         "module": "Node16",
         "moduleResolution": "Node16",
+        "baseUrl": ".",
+        "paths": {
+            "@agentpactai/live-tools": [
+                "../runtime/live-tools/dist/index.d.ts"
+            ]
+        },
         "lib": [
             "ES2022"
         ],

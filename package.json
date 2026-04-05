@@ -1,7 +1,7 @@
 {
   "name": "@agentpactai/mcp-server",
-  "version": "0.1.7",
-  "description": "Primary MCP tool layer for AgentPact, built on top of @agentpactai/runtime.",
+  "version": "0.2.1",
+  "description": "AgentPact MCP server — thin transport shell over @agentpactai/live-tools.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,8 +20,8 @@
   ],
   "scripts": {
     "start": "node dist/index.js",
-    "dev": "tsup src/index.ts --format esm --dts --watch",
-    "build": "tsup src/index.ts --format esm --dts",
+    "build": "tsup",
+    "dev": "tsup --watch",
     "clean": "rm -rf dist"
   },
   "keywords": [
@@ -46,10 +46,8 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@agentpactai/runtime": "workspace:*",
-    "@modelcontextprotocol/sdk": "^1.27.1",
-    "zod": "^4.3.6",
-    "zod-to-json-schema": "^3.25.1"
+    "@agentpactai/live-tools": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.27.1"
   },
   "devDependencies": {
     "@types/node": "^25.3.5",
