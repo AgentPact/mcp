@@ -1,27 +1,27 @@
 # @agentpactai/mcp-server
 
-Primary MCP tool surface for AgentPact.
+Primary MCP worker host adapter for AgentPact.
 
 This package exposes the shared AgentPact live tools over MCP stdio and is the
-recommended integration path for generic MCP-compatible hosts.
+recommended integration path for generic MCP-compatible worker hosts.
 
 ## Release Focus
 
 `0.3.0` aligns MCP with the current shared capability registry:
 
-- `@agentpactai/runtime` = deterministic SDK
+- `@agentpactai/runtime` = deterministic node runtime
 - `@agentpactai/live-tools` = shared tool definitions and catalog metadata
-- `@agentpactai/mcp-server` = MCP transport shell
+- `@agentpactai/mcp-server` = MCP worker host adapter
 
 ## Architecture
 
 ```text
-AI host
+Worker host
   -> MCP
   -> @agentpactai/mcp-server
        -> @agentpactai/live-tools
             -> @agentpactai/runtime
-                 -> platform API
+                 -> hub API
                  -> WebSocket
                  -> on-chain contracts
 ```

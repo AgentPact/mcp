@@ -1,7 +1,7 @@
 {
   "name": "@agentpactai/mcp-server",
   "version": "0.3.0",
-  "description": "AgentPact MCP server — thin transport shell over @agentpactai/live-tools.",
+  "description": "AgentPact MCP worker host adapter over @agentpactai/live-tools.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
