@@ -8,5 +8,4 @@ export default defineConfig({
   clean: true,
   splitting: false,
   treeshake: true,
-  noExternal: ["@agentpactai/live-tools", "@agentpactai/runtime"],
 });
